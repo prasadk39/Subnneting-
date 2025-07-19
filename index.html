@@ -1,0 +1,2537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Network Subnetting Calculator - VLSM & FLSM</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --border-radius: 8px;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+
+        .version-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            background: var(--light-color);
+            border-bottom: 3px solid var(--primary-color);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: var(--transition);
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-tab.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-color);
+        }
+
+        /* Content */
+        .content {
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        select, 
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        small {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: var(--transition);
+            margin: 5px;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            white-space: nowrap;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tr:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .table-striped tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        /* Results */
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .subnet-info {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .subnet-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .info-value {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: var(--secondary-color);
+        }
+
+        /* Statistics */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: var(--border-radius);
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-color: var(--success-color);
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: var(--warning-color);
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: var(--danger-color);
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-color: var(--secondary-color);
+        }
+
+        /* VLSM Requirements */
+        .vlsm-requirement {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .vlsm-requirement.allocated {
+            border-color: var(--success-color);
+            background: #f8fff9;
+        }
+
+        .requirement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .requirement-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .requirement-hosts {
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .remove-requirement {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Binary and Hex Display */
+        .binary-display {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .hex-display {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #0f0f0f;
+            color: #ff6600;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 0;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+
+        /* Utilities */
+        .text-center { text-align: center; }
+        .text-monospace { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; }
+        .font-weight-bold { font-weight: bold; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-20 { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="version-badge">v3.0</div>
+            <h1>Advanced Network Subnetting Calculator</h1>
+            <p>Professional VLSM & FLSM Calculator with Complete Binary/Hex Analysis</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('flsm')">FLSM Calculator</button>
+            <button class="nav-tab" onclick="showTab('vlsm')">VLSM Calculator</button>
+            <button class="nav-tab" onclick="showTab('single')">Single Subnet</button>
+            <button class="nav-tab" onclick="showTab('supernet')">Supernet</button>
+            <button class="nav-tab" onclick="showTab('converter')">IP Converter</button>
+            <button class="nav-tab" onclick="showTab('tools')">Network Tools</button>
+            <button class="nav-tab" onclick="showTab('help')">Help</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- FLSM Calculator Tab -->
+            <div id="flsm" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Fixed Length Subnet Masking (FLSM) Calculator</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="flsm-network">Network Address:</label>
+                                <input type="text" id="flsm-network" placeholder="e.g., 192.168.1.0/24" value="192.168.1.0/24">
+                                <small>Enter network in CIDR notation (IP/prefix)</small>
+                            </div>
+                            <div class="form-col">
+                                <label for="flsm-subnets">Number of Subnets:</label>
+                                <input type="number" id="flsm-subnets" min="2" max="1024" value="4">
+                                <small>Number of equal-sized subnets needed</small>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="calculateFLSM()">Calculate FLSM</button>
+                            <button class="btn btn-secondary" onclick="clearFLSMResults()">Clear Results</button>
+                            <button class="btn btn-success" onclick="exportFLSMResults('csv')">Export CSV</button>
+                            <button class="btn btn-success" onclick="exportFLSMResults('json')">Export JSON</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="flsm-results" class="result-container" style="display: none;">
+                    <h3>FLSM Calculation Results</h3>
+                    <div id="flsm-summary" class="stats-container"></div>
+                    <div id="flsm-table-container" class="table-container"></div>
+                    <div id="flsm-detailed-info"></div>
+                </div>
+            </div>
+
+            <!-- VLSM Calculator Tab -->
+            <div id="vlsm" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Variable Length Subnet Masking (VLSM) Calculator</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="vlsm-network">Base Network Address:</label>
+                            <input type="text" id="vlsm-network" placeholder="e.g., 192.168.0.0/16" value="192.168.0.0/16">
+                            <small>Enter the main network to be subdivided</small>
+                        </div>
+
+                        <h3>Subnet Requirements</h3>
+                        <div id="vlsm-requirements">
+                            <p class="alert alert-info">No requirements added yet. Add subnet requirements below.</p>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="req-name">Subnet Name:</label>
+                                <input type="text" id="req-name" placeholder="e.g., Sales Department">
+                            </div>
+                            <div class="form-col">
+                                <label for="req-hosts">Hosts Required:</label>
+                                <input type="number" id="req-hosts" min="1" max="65534" placeholder="e.g., 50">
+                            </div>
+                            <div class="form-col">
+                                <label for="req-priority">Priority:</label>
+                                <select id="req-priority">
+                                    <option value="1">High (1)</option>
+                                    <option value="2">Medium (2)</option>
+                                    <option value="3">Low (3)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="addVLSMRequirement()">Add Requirement</button>
+                            <button class="btn btn-primary" onclick="calculateVLSM()">Calculate VLSM</button>
+                            <button class="btn btn-warning" onclick="clearVLSMRequirements()">Clear All</button>
+                            <button class="btn btn-success" onclick="exportVLSMResults('csv')">Export CSV</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="vlsm-results" class="result-container" style="display: none;">
+                    <h3>VLSM Calculation Results</h3>
+                    <div id="vlsm-summary" class="stats-container"></div>
+                    <div id="vlsm-efficiency" class="alert alert-info"></div>
+                    <div id="vlsm-table-container" class="table-container"></div>
+                    <div id="vlsm-remaining" class="card">
+                        <div class="card-header">Remaining Available Networks</div>
+                        <div class="card-body" id="vlsm-remaining-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Subnet Calculator Tab -->
+            <div id="single" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Single Subnet Information Calculator</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="single-network">Network Address:</label>
+                            <input type="text" id="single-network" placeholder="e.g., 192.168.1.0/24" value="192.168.1.0/24">
+                            <small>Enter network in CIDR notation</small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="calculateSingleSubnet()">Analyze Subnet</button>
+                            <button class="btn btn-secondary" onclick="clearSingleResults()">Clear Results</button>
+                            <button class="btn btn-success" onclick="exportSingleResults()">Export Results</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="single-results" class="result-container" style="display: none;">
+                    <h3>Subnet Analysis Results</h3>
+                    <div id="single-info" class="subnet-info"></div>
+                    <div id="single-binary" class="card">
+                        <div class="card-header">Binary Representation</div>
+                        <div class="card-body" id="single-binary-content"></div>
+                    </div>
+                    <div id="single-hex" class="card">
+                        <div class="card-header">Hexadecimal Representation</div>
+                        <div class="card-body" id="single-hex-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supernet Calculator Tab -->
+            <div id="supernet" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Supernet/Route Summarization Calculator</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="supernet-networks">Networks to Summarize:</label>
+                            <textarea id="supernet-networks" rows="6" placeholder="Enter networks (one per line):
+192.168.1.0/24
+192.168.2.0/24
+192.168.3.0/24
+192.168.4.0/24"></textarea>
+                            <small>Enter each network on a separate line</small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="calculateSupernet()">Calculate Supernet</button>
+                            <button class="btn btn-secondary" onclick="clearSupernetResults()">Clear Results</button>
+                            <button class="btn btn-success" onclick="exportSupernetResults()">Export Results</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="supernet-results" class="result-container" style="display: none;">
+                    <h3>Supernet Calculation Results</h3>
+                    <div id="supernet-info"></div>
+                    <div id="supernet-efficiency"></div>
+                    <div id="supernet-routing-table" class="table-container"></div>
+                </div>
+            </div>
+
+            <!-- IP Converter Tab -->
+            <div id="converter" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>IP Address Format Converter</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="converter-ip">IP Address:</label>
+                            <input type="text" id="converter-ip" placeholder="e.g., 192.168.1.100" value="192.168.1.100">
+                            <small>Enter IP address in dotted decimal notation</small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="convertIP()">Convert IP</button>
+                            <button class="btn btn-secondary" onclick="clearConverterResults()">Clear Results</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="converter-results" class="result-container" style="display: none;">
+                    <h3>IP Address Conversion Results</h3>
+                    <div id="converter-info"></div>
+                    <div class="card">
+                        <div class="card-header">Subnet Mask Converter</div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="cidr-input">CIDR Prefix:</label>
+                                    <input type="number" id="cidr-input" min="0" max="32" placeholder="/24" onchange="convertCIDR()">
+                                </div>
+                                <div class="form-col">
+                                    <label for="mask-input">Subnet Mask:</label>
+                                    <input type="text" id="mask-input" placeholder="255.255.255.0" onchange="convertMask()">
+                                </div>
+                            </div>
+                            <div id="mask-conversion-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Tools Tab -->
+            <div id="tools" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Network Analysis Tools</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <h3>Network Class Identifier</h3>
+                            <input type="text" id="class-ip" placeholder="Enter IP address" value="192.168.1.1">
+                            <button class="btn btn-primary" onclick="identifyNetworkClass()">Identify Class</button>
+                            <div id="class-results"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <h3>Bandwidth Calculator</h3>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="bandwidth-hosts">Number of Hosts:</label>
+                                    <input type="number" id="bandwidth-hosts" min="1" value="100">
+                                </div>
+                                <div class="form-col">
+                                    <label for="bandwidth-per-host">Bandwidth per Host (Mbps):</label>
+                                    <input type="number" id="bandwidth-per-host" step="0.1" value="1.0">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="calculateBandwidth()">Calculate Bandwidth</button>
+                            <div id="bandwidth-results"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <h3>Network Overlap Detector</h3>
+                            <textarea id="overlap-networks" rows="5" placeholder="Enter networks (one per line):
+192.168.1.0/24
+192.168.1.128/25
+10.0.0.0/8"></textarea>
+                            <button class="btn btn-primary" onclick="checkNetworkOverlap()">Check for Overlaps</button>
+                            <div id="overlap-results"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Tab -->
+            <div id="help" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Help & Examples</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3>Quick Start Guide</h3>
+                        
+                        <h4>FLSM (Fixed Length Subnet Masking)</h4>
+                        <p>Use FLSM when you need to divide a network into equal-sized subnets.</p>
+                        <div class="alert alert-info">
+                            <strong>Example:</strong> Divide 192.168.1.0/24 into 4 subnets:<br>
+                            • 192.168.1.0/26 (62 hosts)<br>
+                            • 192.168.1.64/26 (62 hosts)<br>
+                            • 192.168.1.128/26 (62 hosts)<br>
+                            • 192.168.1.192/26 (62 hosts)
+                        </div>
+
+                        <h4>VLSM (Variable Length Subnet Masking)</h4>
+                        <p>Use VLSM when different subnets need different numbers of hosts.</p>
+                        <div class="alert alert-info">
+                            <strong>Example:</strong> From 192.168.0.0/16 create:<br>
+                            • Sales: 100 hosts → 192.168.0.0/25 (126 hosts)<br>
+                            • HR: 50 hosts → 192.168.0.128/26 (62 hosts)<br>
+                            • IT: 20 hosts → 192.168.0.192/27 (30 hosts)
+                        </div>
+
+                        <h4>Common Private IP Ranges</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Range</th>
+                                        <th>CIDR</th>
+                                        <th>Addresses</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>A</td>
+                                        <td>10.0.0.0 - 10.255.255.255</td>
+                                        <td>/8</td>
+                                        <td>16,777,216</td>
+                                    </tr>
+                                    <tr>
+                                        <td>B</td>
+                                        <td>172.16.0.0 - 172.31.255.255</td>
+                                        <td>/12</td>
+                                        <td>1,048,576</td>
+                                    </tr>
+                                    <tr>
+                                        <td>C</td>
+                                        <td>192.168.0.0 - 192.168.255.255</td>
+                                        <td>/16</td>
+                                        <td>65,536</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4>CIDR Quick Reference</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>CIDR</th>
+                                        <th>Subnet Mask</th>
+                                        <th>Addresses</th>
+                                        <th>Usable Hosts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>/24</td><td>255.255.255.0</td><td>256</td><td>254</td></tr>
+                                    <tr><td>/25</td><td>255.255.255.128</td><td>128</td><td>126</td></tr>
+                                    <tr><td>/26</td><td>255.255.255.192</td><td>64</td><td>62</td></tr>
+                                    <tr><td>/27</td><td>255.255.255.224</td><td>32</td><td>30</td></tr>
+                                    <tr><td>/28</td><td>255.255.255.240</td><td>16</td><td>14</td></tr>
+                                    <tr><td>/29</td><td>255.255.255.248</td><td>8</td><td>6</td></tr>
+                                    <tr><td>/30</td><td>255.255.255.252</td><td>4</td><td>2</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4>Best Practices</h4>
+                        <div class="alert alert-success">
+                            <ul>
+                                <li>Always plan for 20-30% future growth</li>
+                                <li>Use consistent naming conventions</li>
+                                <li>Document your subnetting scheme</li>
+                                <li>Consider VLAN assignments early</li>
+                                <li>Plan management and infrastructure subnets</li>
+                                <li>Use /30 networks for point-to-point links</li>
+                                <li>Reserve first and last subnets for future use</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let flsmResults = [];
+        let vlsmResults = [];
+        let vlsmRequirements = [];
+        let availableNetworks = [];
+        
+        // Network Classes
+        class IPAddress {
+            constructor(ip) {
+                if (typeof ip === 'string') {
+                    const parts = ip.split('.');
+                    if (parts.length !== 4) {
+                        throw new Error('Invalid IP address format');
+                    }
+                    this.octets = parts.map(part => {
+                        const num = parseInt(part);
+                        if (isNaN(num) || num < 0 || num > 255) {
+                            throw new Error('Invalid IP address octet: ' + part);
+                        }
+                        return num;
+                    });
+                } else if (typeof ip === 'number') {
+                    this.octets = [
+                        (ip >>> 24) & 0xFF,
+                        (ip >>> 16) & 0xFF,
+                        (ip >>> 8) & 0xFF,
+                        ip & 0xFF
+                    ];
+                } else {
+                    throw new Error('Invalid IP address input');
+                }
+            }
+
+            toString() {
+                return this.octets.join('.');
+            }
+
+            toNumber() {
+                return (this.octets[0] << 24) + 
+                       (this.octets[1] << 16) + 
+                       (this.octets[2] << 8) + 
+                       this.octets[3];
+            }
+
+            toBinary() {
+                return this.octets.map(octet => 
+                    octet.toString(2).padStart(8, '0')
+                ).join('.');
+            }
+
+            toHex() {
+                return '0x' + this.octets.map(octet => 
+                    octet.toString(16).toUpperCase().padStart(2, '0')
+                ).join('');
+            }
+
+            isPrivate() {
+                const firstOctet = this.octets[0];
+                const secondOctet = this.octets[1];
+                
+                // 10.0.0.0/8
+                if (firstOctet === 10) return true;
+                
+                // 172.16.0.0/12
+                if (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31) return true;
+                
+                // 192.168.0.0/16
+                if (firstOctet === 192 && secondOctet === 168) return true;
+                
+                return false;
+            }
+
+            getNetworkClass() {
+                const firstOctet = this.octets[0];
+                
+                if (firstOctet >= 1 && firstOctet <= 126) {
+                    return this.isPrivate() ? 'Private Class A' : 'Class A';
+                } else if (firstOctet >= 128 && firstOctet <= 191) {
+                    return this.isPrivate() ? 'Private Class B' : 'Class B';
+                } else if (firstOctet >= 192 && firstOctet <= 223) {
+                    return this.isPrivate() ? 'Private Class C' : 'Class C';
+                } else if (firstOctet >= 224 && firstOctet <= 239) {
+                    return 'Class D (Multicast)';
+                } else if (firstOctet >= 240 && firstOctet <= 255) {
+                    return 'Class E (Reserved)';
+                }
+                
+                return 'Unknown';
+            }
+        }
+
+        class Network {
+            constructor(networkStr) {
+                const [ip, prefixStr] = networkStr.split('/');
+                if (!ip || !prefixStr) {
+                    throw new Error('Invalid network format. Use IP/prefix (e.g., 192.168.1.0/24)');
+                }
+                
+                this.address = new IPAddress(ip);
+                this.prefix = parseInt(prefixStr);
+                
+                if (isNaN(this.prefix) || this.prefix < 0 || this.prefix > 32) {
+                    throw new Error('Invalid prefix length. Must be between 0 and 32');
+                }
+                
+                // Calculate network address (apply subnet mask)
+                const mask = this.getSubnetMask();
+                const networkNum = this.address.toNumber() & mask.toNumber();
+                this.networkAddress = new IPAddress(networkNum);
+            }
+
+            getSubnetMask() {
+                const maskNum = (0xFFFFFFFF << (32 - this.prefix)) >>> 0;
+                return new IPAddress(maskNum);
+            }
+
+            getWildcardMask() {
+                const wildcardNum = (~this.getSubnetMask().toNumber()) >>> 0;
+                return new IPAddress(wildcardNum);
+            }
+
+            getBroadcastAddress() {
+                const networkNum = this.networkAddress.toNumber();
+                const hostBits = 32 - this.prefix;
+                const broadcastNum = networkNum + Math.pow(2, hostBits) - 1;
+                return new IPAddress(broadcastNum);
+            }
+
+            getFirstHost() {
+                if (this.prefix >= 31) return this.networkAddress;
+                return new IPAddress(this.networkAddress.toNumber() + 1);
+            }
+
+            getLastHost() {
+                if (this.prefix >= 31) return this.getBroadcastAddress();
+                return new IPAddress(this.getBroadcastAddress().toNumber() - 1);
+            }
+
+            getTotalHosts() {
+                return Math.pow(2, 32 - this.prefix);
+            }
+
+            getUsableHosts() {
+                if (this.prefix >= 31) return this.prefix === 31 ? 2 : 1;
+                return this.getTotalHosts() - 2;
+            }
+
+            toString() {
+                return `${this.networkAddress.toString()}/${this.prefix}`;
+            }
+        }
+
+        class SubnetCalculator {
+            static calculateFLSM(networkStr, numSubnets) {
+                const network = new Network(networkStr);
+                const subnetBits = Math.ceil(Math.log2(numSubnets));
+                const newPrefix = network.prefix + subnetBits;
+                
+                if (newPrefix > 30) {
+                    throw new Error('Too many subnets requested - would result in invalid prefix length');
+                }
+                
+                const subnets = [];
+                const subnetSize = Math.pow(2, 32 - newPrefix);
+                const baseNetworkNum = network.networkAddress.toNumber();
+                
+                for (let i = 0; i < numSubnets; i++) {
+                    const subnetNetworkNum = baseNetworkNum + (i * subnetSize);
+                    const subnetStr = `${new IPAddress(subnetNetworkNum).toString()}/${newPrefix}`;
+                    const subnet = new Network(subnetStr);
+                    
+                    const subnetInfo = {
+                        subnetNumber: i + 1,
+                        network: subnet,
+                        networkAddress: subnet.networkAddress.toString(),
+                        broadcastAddress: subnet.getBroadcastAddress().toString(),
+                        subnetMask: subnet.getSubnetMask().toString(),
+                        wildcardMask: subnet.getWildcardMask().toString(),
+                        firstHost: subnet.getFirstHost().toString(),
+                        lastHost: subnet.getLastHost().toString(),
+                        totalHosts: subnet.getTotalHosts(),
+                        usableHosts: subnet.getUsableHosts(),
+                        cidr: subnet.prefix,
+                        binaryNetwork: subnet.networkAddress.toBinary(),
+                        binaryMask: subnet.getSubnetMask().toBinary(),
+                        hexNetwork: subnet.networkAddress.toHex(),
+                        hexMask: subnet.getSubnetMask().toHex(),
+                        networkClass: subnet.networkAddress.getNetworkClass(),
+                        isPrivate: subnet.networkAddress.isPrivate()
+                    };
+                    
+                    subnets.push(subnetInfo);
+                }
+                
+                return subnets;
+            }
+
+            static calculateVLSM(networkStr, requirements) {
+                const baseNetwork = new Network(networkStr);
+                
+                // Sort by hosts required (descending) then by priority (ascending)
+                const sortedRequirements = [...requirements].sort((a, b) => {
+                    if (b.hosts !== a.hosts) return b.hosts - a.hosts;
+                    return a.priority - b.priority;
+                });
+                
+                const availableNetworks = [baseNetwork];
+                const allocatedSubnets = [];
+                const unallocatedRequirements = [];
+                
+                for (const req of sortedRequirements) {
+                    let allocated = false;
+                    
+                    for (let i = 0; i < availableNetworks.length; i++) {
+                        const availNet = availableNetworks[i];
+                        const hostBits = Math.ceil(Math.log2(req.hosts + 2));
+                        const requiredPrefix = 32 - hostBits;
+                        
+                        if (requiredPrefix >= availNet.prefix && requiredPrefix <= 30) {
+                            let allocatedNetwork;
+                            
+                            if (requiredPrefix === availNet.prefix) {
+                                allocatedNetwork = availNet;
+                                availableNetworks.splice(i, 1);
+                            } else {
+                                allocatedNetwork = new Network(
+                                    `${availNet.networkAddress.toString()}/${requiredPrefix}`
+                                );
+                                
+                                // Calculate remaining networks
+                                availableNetworks.splice(i, 1);
+                                const remainingNetworks = this.splitNetwork(availNet, requiredPrefix);
+                                remainingNetworks.shift(); // Remove the allocated one
+                                availableNetworks.push(...remainingNetworks);
+                                availableNetworks.sort((a, b) => 
+                                    a.networkAddress.toNumber() - b.networkAddress.toNumber()
+                                );
+                            }
+                            
+                            const subnetInfo = {
+                                requirementName: req.name,
+                                hostsRequired: req.hosts,
+                                hostsAllocated: allocatedNetwork.getUsableHosts(),
+                                network: allocatedNetwork,
+                                networkAddress: allocatedNetwork.networkAddress.toString(),
+                                broadcastAddress: allocatedNetwork.getBroadcastAddress().toString(),
+                                subnetMask: allocatedNetwork.getSubnetMask().toString(),
+                                wildcardMask: allocatedNetwork.getWildcardMask().toString(),
+                                firstHost: allocatedNetwork.getFirstHost().toString(),
+                                lastHost: allocatedNetwork.getLastHost().toString(),
+                                totalHosts: allocatedNetwork.getTotalHosts(),
+                                usableHosts: allocatedNetwork.getUsableHosts(),
+                                cidr: allocatedNetwork.prefix,
+                                efficiency: ((req.hosts / allocatedNetwork.getUsableHosts()) * 100).toFixed(2),
+                                binaryNetwork: allocatedNetwork.networkAddress.toBinary(),
+                                binaryMask: allocatedNetwork.getSubnetMask().toBinary(),
+                                hexNetwork: allocatedNetwork.networkAddress.toHex(),
+                                hexMask: allocatedNetwork.getSubnetMask().toHex(),
+                                networkClass: allocatedNetwork.networkAddress.getNetworkClass(),
+                                isPrivate: allocatedNetwork.networkAddress.isPrivate()
+                            };
+                            
+                            allocatedSubnets.push(subnetInfo);
+                            allocated = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!allocated) {
+                        unallocatedRequirements.push(req);
+                    }
+                }
+                
+                return {
+                    allocated: allocatedSubnets,
+                    unallocated: unallocatedRequirements,
+                    remaining: availableNetworks
+                };
+            }
+
+            static splitNetwork(network, newPrefix) {
+                const numSubnets = Math.pow(2, newPrefix - network.prefix);
+                const subnetSize = Math.pow(2, 32 - newPrefix);
+                const baseNetworkNum = network.networkAddress.toNumber();
+                const subnets = [];
+                
+                for (let i = 0; i < numSubnets; i++) {
+                    const subnetNetworkNum = baseNetworkNum + (i * subnetSize);
+                    const subnetStr = `${new IPAddress(subnetNetworkNum).toString()}/${newPrefix}`;
+                    subnets.push(new Network(subnetStr));
+                }
+                
+                return subnets;
+            }
+
+            static calculateSupernet(networkStrings) {
+                const networks = networkStrings.map(str => new Network(str.trim()));
+                
+                if (networks.length < 2) {
+                    throw new Error('At least 2 networks required for supernetting');
+                }
+                
+                // Find the range of all networks
+                let minAddress = networks[0].networkAddress.toNumber();
+                let maxAddress = networks[0].getBroadcastAddress().toNumber();
+                
+                for (const network of networks) {
+                    const netStart = network.networkAddress.toNumber();
+                    const netEnd = network.getBroadcastAddress().toNumber();
+                    
+                    if (netStart < minAddress) minAddress = netStart;
+                    if (netEnd > maxAddress) maxAddress = netEnd;
+                }
+                
+                // Find the prefix length that covers all networks
+                const range = maxAddress - minAddress + 1;
+                const prefixLength = 32 - Math.ceil(Math.log2(range));
+                
+                // Calculate the supernet address
+                const maskNum = (0xFFFFFFFF << (32 - prefixLength)) >>> 0;
+                const supernetNum = minAddress & maskNum;
+                const supernetStr = `${new IPAddress(supernetNum).toString()}/${prefixLength}`;
+                
+                return new Network(supernetStr);
+            }
+        }
+
+        // UI Management Functions
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+        }
+
+        function showAlert(message, type = 'info') {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert.temp-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} temp-alert`;
+            alertDiv.textContent = message;
+            
+            // Insert at the top of the content area
+            const content = document.querySelector('.content');
+            content.insertBefore(alertDiv, content.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+
+        // FLSM Calculator Functions
+        function calculateFLSM() {
+            try {
+                const networkStr = document.getElementById('flsm-network').value.trim();
+                const numSubnets = parseInt(document.getElementById('flsm-subnets').value);
+                
+                if (!networkStr) {
+                    showAlert('Please enter a network address', 'warning');
+                    return;
+                }
+                
+                if (!numSubnets || numSubnets < 2) {
+                    showAlert('Please enter a valid number of subnets (minimum 2)', 'warning');
+                    return;
+                }
+                
+                flsmResults = SubnetCalculator.calculateFLSM(networkStr, numSubnets);
+                displayFLSMResults();
+                showAlert(`FLSM calculation completed successfully! Generated ${flsmResults.length} subnets.`, 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displayFLSMResults() {
+            const resultsDiv = document.getElementById('flsm-results');
+            const summaryDiv = document.getElementById('flsm-summary');
+            const tableDiv = document.getElementById('flsm-table-container');
+            const detailedDiv = document.getElementById('flsm-detailed-info');
+            
+            resultsDiv.style.display = 'block';
+            
+            // Display summary statistics
+            const totalUsableHosts = flsmResults.reduce((sum, subnet) => sum + subnet.usableHosts, 0);
+            const totalAddresses = flsmResults.reduce((sum, subnet) => sum + subnet.totalHosts, 0);
+            const efficiency = ((totalUsableHosts / totalAddresses) * 100).toFixed(2);
+            
+            summaryDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${flsmResults.length}</div>
+                    <div class="stat-label">Subnets Created</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalUsableHosts.toLocaleString()}</div>
+                    <div class="stat-label">Total Usable Hosts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${efficiency}%</div>
+                    <div class="stat-label">Address Efficiency</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">/${flsmResults[0]?.cidr || 'N/A'}</div>
+                    <div class="stat-label">Subnet Mask</div>
+                </div>
+            `;
+            
+            // Display results table
+            let tableHTML = `
+                <table class="table-striped">
+                    <thead>
+                        <tr>
+                            <th>Subnet #</th>
+                            <th>Network Address</th>
+                            <th>Broadcast Address</th>
+                            <th>First Host</th>
+                            <th>Last Host</th>
+                            <th>Usable Hosts</th>
+                            <th>CIDR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            flsmResults.forEach(subnet => {
+                tableHTML += `
+                    <tr>
+                        <td>${subnet.subnetNumber}</td>
+                        <td class="text-monospace">${subnet.networkAddress}</td>
+                        <td class="text-monospace">${subnet.broadcastAddress}</td>
+                        <td class="text-monospace">${subnet.firstHost}</td>
+                        <td class="text-monospace">${subnet.lastHost}</td>
+                        <td>${subnet.usableHosts.toLocaleString()}</td>
+                        <td class="text-monospace">/${subnet.cidr}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            tableDiv.innerHTML = tableHTML;
+            
+            // Display detailed information for first subnet
+            if (flsmResults.length > 0) {
+                const firstSubnet = flsmResults[0];
+                detailedDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Detailed Information (First Subnet)</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Network:</span>
+                                    <span class="info-value">${firstSubnet.networkAddress}/${firstSubnet.cidr}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Subnet Mask:</span>
+                                    <span class="info-value">${firstSubnet.subnetMask}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Wildcard Mask:</span>
+                                    <span class="info-value">${firstSubnet.wildcardMask}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Network Class:</span>
+                                    <span class="info-value">${firstSubnet.networkClass}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Private Network:</span>
+                                    <span class="info-value">${firstSubnet.isPrivate ? 'Yes' : 'No'}</span>
+                                </div>
+                            </div>
+                            <div class="binary-display">
+                                <strong>Binary Network:</strong> ${firstSubnet.binaryNetwork}<br>
+                                <strong>Binary Mask:</strong>&nbsp;&nbsp;&nbsp; ${firstSubnet.binaryMask}
+                            </div>
+                            <div class="hex-display">
+                                <strong>Hex Network:</strong> ${firstSubnet.hexNetwork}<br>
+                                <strong>Hex Mask:</strong>&nbsp;&nbsp;&nbsp; ${firstSubnet.hexMask}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function clearFLSMResults() {
+            flsmResults = [];
+            document.getElementById('flsm-results').style.display = 'none';
+            document.getElementById('flsm-network').value = '192.168.1.0/24';
+            document.getElementById('flsm-subnets').value = '4';
+            showAlert('FLSM results cleared', 'info');
+        }
+
+        // VLSM Calculator Functions
+        function addVLSMRequirement() {
+            const name = document.getElementById('req-name').value.trim();
+            const hosts = parseInt(document.getElementById('req-hosts').value);
+            const priority = parseInt(document.getElementById('req-priority').value);
+            
+            if (!name) {
+                showAlert('Please enter a subnet name', 'warning');
+                return;
+            }
+            
+            if (!hosts || hosts < 1) {
+                showAlert('Please enter a valid number of hosts', 'warning');
+                return;
+            }
+            
+            const requirement = {
+                name: name,
+                hosts: hosts,
+                priority: priority
+            };
+            
+            vlsmRequirements.push(requirement);
+            displayVLSMRequirements();
+            
+            // Clear input fields
+            document.getElementById('req-name').value = '';
+            document.getElementById('req-hosts').value = '';
+            document.getElementById('req-priority').value = '1';
+            
+            showAlert(`Added requirement: ${name} (${hosts} hosts)`, 'success');
+        }
+
+        function displayVLSMRequirements() {
+            const container = document.getElementById('vlsm-requirements');
+            
+            if (vlsmRequirements.length === 0) {
+                container.innerHTML = '<p class="alert alert-info">No requirements added yet. Add subnet requirements below.</p>';
+                return;
+            }
+            
+            let html = '<h4>Current Requirements:</h4>';
+            vlsmRequirements.forEach((req, index) => {
+                const priorityText = ['High', 'Medium', 'Low'][req.priority - 1];
+                html += `
+                    <div class="vlsm-requirement">
+                        <div class="requirement-header">
+                            <div class="requirement-name">${req.name}</div>
+                            <div class="requirement-hosts">${req.hosts} hosts</div>
+                            <button class="remove-requirement" onclick="removeVLSMRequirement(${index})" title="Remove requirement">×</button>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Priority:</span>
+                            <span class="info-value">${priorityText} (${req.priority})</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function removeVLSMRequirement(index) {
+            vlsmRequirements.splice(index, 1);
+            displayVLSMRequirements();
+            showAlert('Requirement removed', 'info');
+        }
+
+        function clearVLSMRequirements() {
+            vlsmRequirements = [];
+            vlsmResults = [];
+            displayVLSMRequirements();
+            document.getElementById('vlsm-results').style.display = 'none';
+            showAlert('All VLSM requirements cleared', 'info');
+        }
+
+        function calculateVLSM() {
+            try {
+                const networkStr = document.getElementById('vlsm-network').value.trim();
+                
+                if (!networkStr) {
+                    showAlert('Please enter a base network address', 'warning');
+                    return;
+                }
+                
+                if (vlsmRequirements.length === 0) {
+                    showAlert('Please add at least one subnet requirement', 'warning');
+                    return;
+                }
+                
+                vlsmResults = SubnetCalculator.calculateVLSM(networkStr, vlsmRequirements);
+                availableNetworks = vlsmResults.remaining;
+                displayVLSMResults();
+                
+                const allocatedCount = vlsmResults.allocated.length;
+                const unallocatedCount = vlsmResults.unallocated.length;
+                
+                if (unallocatedCount > 0) {
+                    showAlert(`VLSM calculation completed. ${allocatedCount} requirements allocated, ${unallocatedCount} could not be allocated.`, 'warning');
+                } else {
+                    showAlert(`VLSM calculation completed successfully! All ${allocatedCount} requirements allocated.`, 'success');
+                }
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displayVLSMResults() {
+            const resultsDiv = document.getElementById('vlsm-results');
+            const summaryDiv = document.getElementById('vlsm-summary');
+            const efficiencyDiv = document.getElementById('vlsm-efficiency');
+            const tableDiv = document.getElementById('vlsm-table-container');
+            const remainingDiv = document.getElementById('vlsm-remaining-content');
+            
+            resultsDiv.style.display = 'block';
+            
+            // Display summary statistics
+            const totalRequiredHosts = vlsmRequirements.reduce((sum, req) => sum + req.hosts, 0);
+            const totalAllocatedHosts = vlsmResults.allocated.reduce((sum, subnet) => sum + subnet.usableHosts, 0);
+            const overallEfficiency = totalAllocatedHosts > 0 ? ((totalRequiredHosts / totalAllocatedHosts) * 100).toFixed(2) : '0.00';
+            
+            summaryDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${vlsmResults.allocated.length}</div>
+                    <div class="stat-label">Subnets Allocated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${vlsmResults.unallocated.length}</div>
+                    <div class="stat-label">Unallocated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalAllocatedHosts.toLocaleString()}</div>
+                    <div class="stat-label">Total Allocated Hosts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overallEfficiency}%</div>
+                    <div class="stat-label">Overall Efficiency</div>
+                </div>
+            `;
+            
+            // Display efficiency information
+            efficiencyDiv.innerHTML = `
+                <strong>Address Utilization Analysis:</strong><br>
+                Required hosts: ${totalRequiredHosts.toLocaleString()}<br>
+                Allocated hosts: ${totalAllocatedHosts.toLocaleString()}<br>
+                Efficiency: ${overallEfficiency}% (${totalAllocatedHosts - totalRequiredHosts} hosts overhead)
+            `;
+            
+            // Display results table
+            let tableHTML = `
+                <table class="table-striped">
+                    <thead>
+                        <tr>
+                            <th>Requirement</th>
+                            <th>Requested</th>
+                            <th>Network Address</th>
+                            <th>Broadcast Address</th>
+                            <th>First Host</th>
+                            <th>Last Host</th>
+                            <th>Allocated</th>
+                            <th>CIDR</th>
+                            <th>Efficiency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            vlsmResults.allocated.forEach(subnet => {
+                tableHTML += `
+                    <tr>
+                        <td class="font-weight-bold">${subnet.requirementName}</td>
+                        <td>${subnet.hostsRequired}</td>
+                        <td class="text-monospace">${subnet.networkAddress}</td>
+                        <td class="text-monospace">${subnet.broadcastAddress}</td>
+                        <td class="text-monospace">${subnet.firstHost}</td>
+                        <td class="text-monospace">${subnet.lastHost}</td>
+                        <td>${subnet.usableHosts}</td>
+                        <td class="text-monospace">/${subnet.cidr}</td>
+                        <td>${subnet.efficiency}%</td>
+                    </tr>
+                `;
+            });
+            
+            // Add unallocated requirements
+            vlsmResults.unallocated.forEach(req => {
+                tableHTML += `
+                    <tr style="background-color: #ffebee;">
+                        <td class="font-weight-bold">${req.name}</td>
+                        <td>${req.hosts}</td>
+                        <td colspan="7" style="text-align: center; color: #d32f2f;"><strong>COULD NOT ALLOCATE</strong></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            tableDiv.innerHTML = tableHTML;
+            
+            // Display remaining networks
+            let remainingHTML = '';
+            if (availableNetworks.length > 0) {
+                remainingHTML += '<h5>Available for Future Use:</h5>';
+                availableNetworks.forEach(network => {
+                    remainingHTML += `
+                        <div class="subnet-info" style="border-left-color: #ff9800;">
+                            <div class="subnet-header">${network.toString()}</div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Usable Hosts:</span>
+                                    <span class="info-value">${network.getUsableHosts().toLocaleString()}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Broadcast:</span>
+                                    <span class="info-value">${network.getBroadcastAddress().toString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                remainingHTML = '<p>No remaining networks available.</p>';
+            }
+            
+            remainingDiv.innerHTML = remainingHTML;
+        }
+
+        // Single Subnet Calculator Functions
+        function calculateSingleSubnet() {
+            try {
+                const networkStr = document.getElementById('single-network').value.trim();
+                
+                if (!networkStr) {
+                    showAlert('Please enter a network address', 'warning');
+                    return;
+                }
+                
+                const network = new Network(networkStr);
+                displaySingleSubnetResults(network);
+                showAlert('Subnet analysis completed successfully!', 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displaySingleSubnetResults(network) {
+            const resultsDiv = document.getElementById('single-results');
+            const infoDiv = document.getElementById('single-info');
+            const binaryDiv = document.getElementById('single-binary-content');
+            const hexDiv = document.getElementById('single-hex-content');
+            
+            resultsDiv.style.display = 'block';
+            
+            // Display basic subnet information
+            infoDiv.innerHTML = `
+                <div class="subnet-header">${network.toString()}</div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Network Address:</span>
+                        <span class="info-value">${network.networkAddress.toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Broadcast Address:</span>
+                        <span class="info-value">${network.getBroadcastAddress().toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Subnet Mask:</span>
+                        <span class="info-value">${network.getSubnetMask().toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Wildcard Mask:</span>
+                        <span class="info-value">${network.getWildcardMask().toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">First Host:</span>
+                        <span class="info-value">${network.getFirstHost().toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Host:</span>
+                        <span class="info-value">${network.getLastHost().toString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Hosts:</span>
+                        <span class="info-value">${network.getTotalHosts().toLocaleString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Usable Hosts:</span>
+                        <span class="info-value">${network.getUsableHosts().toLocaleString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Network Class:</span>
+                        <span class="info-value">${network.networkAddress.getNetworkClass()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Private Network:</span>
+                        <span class="info-value">${network.networkAddress.isPrivate() ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Display binary representation
+            binaryDiv.innerHTML = `
+                <div class="binary-display">
+                    <strong>Network Address:</strong><br>
+                    ${network.networkAddress.toBinary()}<br><br>
+                    <strong>Subnet Mask:</strong><br>
+                    ${network.getSubnetMask().toBinary()}<br><br>
+                    <strong>Broadcast Address:</strong><br>
+                    ${network.getBroadcastAddress().toBinary()}<br><br>
+                    <strong>Wildcard Mask:</strong><br>
+                    ${network.getWildcardMask().toBinary()}
+                </div>
+            `;
+            
+            // Display hexadecimal representation
+            hexDiv.innerHTML = `
+                <div class="hex-display">
+                    <strong>Network Address:</strong> ${network.networkAddress.toHex()}<br>
+                    <strong>Subnet Mask:</strong> ${network.getSubnetMask().toHex()}<br>
+                    <strong>Broadcast Address:</strong> ${network.getBroadcastAddress().toHex()}<br>
+                    <strong>Wildcard Mask:</strong> ${network.getWildcardMask().toHex()}
+                </div>
+            `;
+        }
+
+        function clearSingleResults() {
+            document.getElementById('single-results').style.display = 'none';
+            document.getElementById('single-network').value = '192.168.1.0/24';
+            showAlert('Single subnet results cleared', 'info');
+        }
+
+        // Supernet Calculator Functions
+        function calculateSupernet() {
+            try {
+                const networksText = document.getElementById('supernet-networks').value.trim();
+                
+                if (!networksText) {
+                    showAlert('Please enter networks to summarize', 'warning');
+                    return;
+                }
+                
+                const networkLines = networksText.split('\n').filter(line => line.trim());
+                
+                if (networkLines.length < 2) {
+                    showAlert('Please enter at least 2 networks for summarization', 'warning');
+                    return;
+                }
+                
+                const supernet = SubnetCalculator.calculateSupernet(networkLines);
+                displaySupernetResults(supernet, networkLines);
+                showAlert('Supernet calculation completed successfully!', 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displaySupernetResults(supernet, originalNetworks) {
+            const resultsDiv = document.getElementById('supernet-results');
+            const infoDiv = document.getElementById('supernet-info');
+            const efficiencyDiv = document.getElementById('supernet-efficiency');
+            const routingDiv = document.getElementById('supernet-routing-table');
+            
+            resultsDiv.style.display = 'block';
+            
+            // Calculate efficiency metrics
+            const originalRoutes = originalNetworks.length;
+            const summarizedRoutes = 1;
+            const efficiency = ((originalRoutes - summarizedRoutes) / originalRoutes * 100).toFixed(2);
+            
+            // Display supernet information
+            infoDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-header">Supernet Summary</div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Summarized Route:</span>
+                                <span class="info-value" style="font-size: 1.2em; font-weight: bold;">${supernet.toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Network Address:</span>
+                                <span class="info-value">${supernet.networkAddress.toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Broadcast Address:</span>
+                                <span class="info-value">${supernet.getBroadcastAddress().toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Subnet Mask:</span>
+                                <span class="info-value">${supernet.getSubnetMask().toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Total Addresses:</span>
+                                <span class="info-value">${supernet.getTotalHosts().toLocaleString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Original Networks:</span>
+                                <span class="info-value">${originalNetworks.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Display efficiency information
+            efficiencyDiv.innerHTML = `
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">${originalRoutes}</div>
+                        <div class="stat-label">Original Routes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">Summarized Route</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${efficiency}%</div>
+                        <div class="stat-label">Route Reduction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${originalRoutes - 1}</div>
+                        <div class="stat-label">Routes Saved</div>
+                    </div>
+                </div>
+            `;
+            
+            // Display routing table comparison
+            let routingHTML = `
+                <h4>Routing Table Comparison</h4>
+                <div class="form-row">
+                    <div class="form-col">
+                        <h5>Original Routes</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Destination</th>
+                                    <th>Mask</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            originalNetworks.forEach(networkStr => {
+                try {
+                    const network = new Network(networkStr.trim());
+                    routingHTML += `
+                        <tr>
+                            <td class="text-monospace">${network.networkAddress.toString()}</td>
+                            <td class="text-monospace">${network.getSubnetMask().toString()}</td>
+                        </tr>
+                    `;
+                } catch (error) {
+                    routingHTML += `
+                        <tr>
+                            <td style="color: red;" class="text-monospace">${networkStr.trim()}</td>
+                            <td style="color: red;">Invalid</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            routingHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-col">
+                        <h5>Summarized Route</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Destination</th>
+                                    <th>Mask</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background-color: #e8f5e8;">
+                                    <td class="text-monospace">${supernet.networkAddress.toString()}</td>
+                                    <td class="text-monospace">${supernet.getSubnetMask().toString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            routingDiv.innerHTML = routingHTML;
+        }
+
+        function clearSupernetResults() {
+            document.getElementById('supernet-results').style.display = 'none';
+            document.getElementById('supernet-networks').value = '';
+            showAlert('Supernet results cleared', 'info');
+        }
+
+        // IP Converter Functions
+        function convertIP() {
+            try {
+                const ipStr = document.getElementById('converter-ip').value.trim();
+                
+                if (!ipStr) {
+                    showAlert('Please enter an IP address', 'warning');
+                    return;
+                }
+                
+                const ip = new IPAddress(ipStr);
+                displayIPConversionResults(ip);
+                showAlert('IP conversion completed successfully!', 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displayIPConversionResults(ip) {
+            const resultsDiv = document.getElementById('converter-results');
+            const infoDiv = document.getElementById('converter-info');
+            
+            resultsDiv.style.display = 'block';
+            
+            const decimal = ip.toString();
+            const binary = ip.toBinary();
+            const hex = ip.toHex();
+            const integer = ip.toNumber();
+            
+            infoDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-header">IP Address Conversions for ${decimal}</div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Decimal:</span>
+                                <span class="info-value">${decimal}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Integer:</span>
+                                <span class="info-value">${integer.toLocaleString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Network Class:</span>
+                                <span class="info-value">${ip.getNetworkClass()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Private Address:</span>
+                                <span class="info-value">${ip.isPrivate() ? 'Yes' : 'No'}</span>
+                            </div>
+                        </div>
+                        <div class="binary-display">
+                            <strong>Binary:</strong> ${binary}
+                        </div>
+                        <div class="hex-display">
+                            <strong>Hexadecimal:</strong> ${hex}
+                        </div>
+                        <h5>Octet Breakdown:</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Octet</th>
+                                    <th>Decimal</th>
+                                    <th>Binary</th>
+                                    <th>Hexadecimal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            ip.octets.forEach((octet, index) => {
+                const binaryOctet = octet.toString(2).padStart(8, '0');
+                const hexOctet = '0x' + octet.toString(16).toUpperCase().padStart(2, '0');
+                infoDiv.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${octet}</td>
+                        <td class="text-monospace">${binaryOctet}</td>
+                        <td class="text-monospace">${hexOctet}</td>
+                    </tr>
+                `;
+            });
+            
+            infoDiv.innerHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function convertCIDR() {
+            try {
+                const cidr = parseInt(document.getElementById('cidr-input').value);
+                
+                if (isNaN(cidr) || cidr < 0 || cidr > 32) {
+                    return;
+                }
+                
+                const maskNum = (0xFFFFFFFF << (32 - cidr)) >>> 0;
+                const mask = new IPAddress(maskNum);
+                const wildcard = new IPAddress((~maskNum) >>> 0);
+                
+                document.getElementById('mask-input').value = mask.toString();
+                
+                displayMaskConversionResults(cidr, mask, wildcard);
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function convertMask() {
+            try {
+                const maskStr = document.getElementById('mask-input').value.trim();
+                
+                if (!maskStr) return;
+                
+                const mask = new IPAddress(maskStr);
+                const maskNum = mask.toNumber();
+                
+                // Calculate CIDR
+                let cidr = 0;
+                let temp = maskNum;
+                while (temp & 0x80000000) {
+                    cidr++;
+                    temp <<= 1;
+                }
+                
+                document.getElementById('cidr-input').value = cidr;
+                
+                const wildcard = new IPAddress((~maskNum) >>> 0);
+                displayMaskConversionResults(cidr, mask, wildcard);
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function displayMaskConversionResults(cidr, mask, wildcard) {
+            const resultsDiv = document.getElementById('mask-conversion-results');
+            
+            const totalHosts = Math.pow(2, 32 - cidr);
+            const usableHosts = Math.max(0, totalHosts - 2);
+            
+            resultsDiv.innerHTML = `
+                <div class="card">
+                    <div class="card-header">Subnet Mask Conversion Results</div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">CIDR Notation:</span>
+                                <span class="info-value">/${cidr}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Subnet Mask:</span>
+                                <span class="info-value">${mask.toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Wildcard Mask:</span>
+                                <span class="info-value">${wildcard.toString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Network Bits:</span>
+                                <span class="info-value">${cidr}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Host Bits:</span>
+                                <span class="info-value">${32 - cidr}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Total Addresses:</span>
+                                <span class="info-value">${totalHosts.toLocaleString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Usable Hosts:</span>
+                                <span class="info-value">${usableHosts.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="binary-display">
+                            <strong>Subnet Mask (Binary):</strong> ${mask.toBinary()}<br>
+                            <strong>Wildcard Mask (Binary):</strong> ${wildcard.toBinary()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearConverterResults() {
+            document.getElementById('converter-results').style.display = 'none';
+            document.getElementById('converter-ip').value = '192.168.1.100';
+            document.getElementById('cidr-input').value = '';
+            document.getElementById('mask-input').value = '';
+            document.getElementById('mask-conversion-results').innerHTML = '';
+            showAlert('Converter results cleared', 'info');
+        }
+
+        // Network Tools Functions
+        function identifyNetworkClass() {
+            try {
+                const ipStr = document.getElementById('class-ip').value.trim();
+                
+                if (!ipStr) {
+                    showAlert('Please enter an IP address', 'warning');
+                    return;
+                }
+                
+                const ip = new IPAddress(ipStr);
+                const resultsDiv = document.getElementById('class-results');
+                
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">Network Classification for ${ip.toString()}</div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Network Class:</span>
+                                    <span class="info-value">${ip.getNetworkClass()}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Private Network:</span>
+                                    <span class="info-value">${ip.isPrivate() ? 'Yes' : 'No'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">First Octet:</span>
+                                    <span class="info-value">${ip.octets[0]}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                showAlert('Network class identified successfully!', 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function calculateBandwidth() {
+            try {
+                const hosts = parseInt(document.getElementById('bandwidth-hosts').value);
+                const bandwidthPerHost = parseFloat(document.getElementById('bandwidth-per-host').value);
+                
+                if (!hosts || hosts < 1) {
+                    showAlert('Please enter a valid number of hosts', 'warning');
+                    return;
+                }
+                
+                if (!bandwidthPerHost || bandwidthPerHost <= 0) {
+                    showAlert('Please enter a valid bandwidth per host', 'warning');
+                    return;
+                }
+                
+                const totalBandwidth = hosts * bandwidthPerHost;
+                const totalBandwidthGbps = totalBandwidth / 1000;
+                const recommendedCapacity = totalBandwidth * 1.2; // 20% overhead
+                
+                const resultsDiv = document.getElementById('bandwidth-results');
+                
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">Bandwidth Requirements</div>
+                        <div class="card-body">
+                            <div class="stats-container">
+                                <div class="stat-card">
+                                    <div class="stat-number">${hosts.toLocaleString()}</div>
+                                    <div class="stat-label">Hosts</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${bandwidthPerHost}</div>
+                                    <div class="stat-label">Mbps per Host</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${totalBandwidth.toFixed(2)}</div>
+                                    <div class="stat-label">Total Mbps</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${totalBandwidthGbps.toFixed(3)}</div>
+                                    <div class="stat-label">Total Gbps</div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <strong>Recommended Link Capacity:</strong> ${recommendedCapacity.toFixed(2)} Mbps<br>
+                                <small>Includes 20% overhead for optimal performance</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                showAlert('Bandwidth calculation completed!', 'success');
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        function checkNetworkOverlap() {
+            try {
+                const networksText = document.getElementById('overlap-networks').value.trim();
+                
+                if (!networksText) {
+                    showAlert('Please enter networks to check', 'warning');
+                    return;
+                }
+                
+                const networkLines = networksText.split('\n').filter(line => line.trim());
+                
+                if (networkLines.length < 2) {
+                    showAlert('Please enter at least 2 networks', 'warning');
+                    return;
+                }
+                
+                const networks = [];
+                const errors = [];
+                
+                // Parse networks
+                networkLines.forEach((line, index) => {
+                    try {
+                        const network = new Network(line.trim());
+                        networks.push({network, line: line.trim(), index: index + 1});
+                    } catch (error) {
+                        errors.push(`Line ${index + 1}: ${error.message}`);
+                    }
+                });
+                
+                const overlaps = [];
+                const contains = [];
+                
+                // Check for overlaps and containment
+                for (let i = 0; i < networks.length; i++) {
+                    for (let j = i + 1; j < networks.length; j++) {
+                        const net1 = networks[i].network;
+                        const net2 = networks[j].network;
+                        
+                        const net1Start = net1.networkAddress.toNumber();
+                        const net1End = net1.getBroadcastAddress().toNumber();
+                        const net2Start = net2.networkAddress.toNumber();
+                        const net2End = net2.getBroadcastAddress().toNumber();
+                        
+                        // Check for overlap
+                        if (!(net1End < net2Start || net2End < net1Start)) {
+                            if (net1Start <= net2Start && net1End >= net2End) {
+                                contains.push({
+                                    container: networks[i],
+                                    contained: networks[j]
+                                });
+                            } else if (net2Start <= net1Start && net2End >= net1End) {
+                                contains.push({
+                                    container: networks[j],
+                                    contained: networks[i]
+                                });
+                            } else {
+                                overlaps.push({
+                                    network1: networks[i],
+                                    network2: networks[j]
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                const resultsDiv = document.getElementById('overlap-results');
+                
+                let resultsHTML = `
+                    <div class="card mt-20">
+                        <div class="card-header">Network Overlap Analysis</div>
+                        <div class="card-body">
+                            <div class="stats-container">
+                                <div class="stat-card">
+                                    <div class="stat-number">${networks.length}</div>
+                                    <div class="stat-label">Valid Networks</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${errors.length}</div>
+                                    <div class="stat-label">Invalid Entries</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${overlaps.length}</div>
+                                    <div class="stat-label">Overlaps Found</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${contains.length}</div>
+                                    <div class="stat-label">Contained Networks</div>
+                                </div>
+                            </div>
+                `;
+                
+                if (errors.length > 0) {
+                    resultsHTML += `
+                        <div class="alert alert-danger">
+                            <strong>Invalid Network Entries:</strong><br>
+                            ${errors.join('<br>')}
+                        </div>
+                    `;
+                }
+                
+                if (overlaps.length > 0) {
+                    resultsHTML += `
+                        <div class="alert alert-warning">
+                            <strong>Network Overlaps Detected:</strong><br>
+                    `;
+                    overlaps.forEach(overlap => {
+                        resultsHTML += `Line ${overlap.network1.index} (${overlap.network1.line}) overlaps with Line ${overlap.network2.index} (${overlap.network2.line})<br>`;
+                    });
+                    resultsHTML += '</div>';
+                }
+                
+                if (contains.length > 0) {
+                    resultsHTML += `
+                        <div class="alert alert-info">
+                            <strong>Network Containment:</strong><br>
+                    `;
+                    contains.forEach(contain => {
+                        resultsHTML += `Line ${contain.container.index} (${contain.container.line}) contains Line ${contain.contained.index} (${contain.contained.line})<br>`;
+                    });
+                    resultsHTML += '</div>';
+                }
+                
+                if (overlaps.length === 0 && contains.length === 0 && errors.length === 0) {
+                    resultsHTML += `
+                        <div class="alert alert-success">
+                            <strong>No Issues Found:</strong> All networks are valid and non-overlapping.
+                        </div>
+                    `;
+                }
+                
+                resultsHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+                if (errors.length > 0 || overlaps.length > 0) {
+                    showAlert('Network analysis completed with issues found', 'warning');
+                } else {
+                    showAlert('Network analysis completed - no issues found!', 'success');
+                }
+                
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        // Export Functions
+        function exportFLSMResults(format) {
+            if (flsmResults.length === 0) {
+                showAlert('No FLSM results to export', 'warning');
+                return;
+            }
+            
+            if (format === 'csv') {
+                const csvContent = generateCSV(flsmResults, 'FLSM');
+                downloadFile(csvContent, 'flsm_results.csv', 'text/csv');
+                showAlert('FLSM results exported to CSV', 'success');
+            } else if (format === 'json') {
+                const jsonContent = JSON.stringify(flsmResults, null, 2);
+                downloadFile(jsonContent, 'flsm_results.json', 'application/json');
+                showAlert('FLSM results exported to JSON', 'success');
+            }
+        }
+
+        function exportVLSMResults(format) {
+            if (!vlsmResults || vlsmResults.allocated.length === 0) {
+                showAlert('No VLSM results to export', 'warning');
+                return;
+            }
+            
+            if (format === 'csv') {
+                const csvContent = generateCSV(vlsmResults.allocated, 'VLSM');
+                downloadFile(csvContent, 'vlsm_results.csv', 'text/csv');
+                showAlert('VLSM results exported to CSV', 'success');
+            }
+        }
+
+        function exportSingleResults() {
+            // Implementation would depend on what single subnet data to export
+            showAlert('Single subnet export feature coming soon', 'info');
+        }
+
+        function exportSupernetResults() {
+            // Implementation would depend on what supernet data to export
+            showAlert('Supernet export feature coming soon', 'info');
+        }
+
+        function generateCSV(data, type) {
+            if (type === 'FLSM') {
+                const headers = ['Subnet Number', 'Network Address', 'Broadcast Address', 'First Host', 'Last Host', 'Usable Hosts', 'CIDR', 'Subnet Mask'];
+                let csvContent = headers.join(',') + '\n';
+                
+                data.forEach(subnet => {
+                    const row = [
+                        subnet.subnetNumber,
+                        subnet.networkAddress,
+                        subnet.broadcastAddress,
+                        subnet.firstHost,
+                        subnet.lastHost,
+                        subnet.usableHosts,
+                        `/${subnet.cidr}`,
+                        subnet.subnetMask
+                    ].join(',');
+                    csvContent += row + '\n';
+                });
+                
+                return csvContent;
+            } else if (type === 'VLSM') {
+                const headers = ['Requirement Name', 'Hosts Required', 'Network Address', 'Broadcast Address', 'First Host', 'Last Host', 'Allocated Hosts', 'CIDR', 'Efficiency'];
+                let csvContent = headers.join(',') + '\n';
+                
+                data.forEach(subnet => {
+                    const row = [
+                        subnet.requirementName,
+                        subnet.hostsRequired,
+                        subnet.networkAddress,
+                        subnet.broadcastAddress,
+                        subnet.firstHost,
+                        subnet.lastHost,
+                        subnet.usableHosts,
+                        `/${subnet.cidr}`,
+                        `${subnet.efficiency}%`
+                    ].join(',');
+                    csvContent += row + '\n';
+                });
+                
+                return csvContent;
+            }
+            
+            return '';
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners for form validation
+            const ipInputs = document.querySelectorAll('input[type="text"]');
+            ipInputs.forEach(input => {
+                if (input.id.includes('network') || input.id.includes('ip')) {
+                    input.addEventListener('blur', function() {
+                        validateIPInput(this);
+                    });
+                }
+            });
+            
+            // Show welcome message
+            setTimeout(() => {
+                showAlert('Welcome to the Advanced Network Subnetting Calculator! Click on any tab to get started.', 'info');
+            }, 1000);
+        });
+
+        function validateIPInput(input) {
+            const value = input.value.trim();
+            if (!value) return;
+            
+            try {
+                if (value.includes('/')) {
+                    new Network(value);
+                } else {
+                    new IPAddress(value);
+                }
+                input.style.borderColor = 'var(--success-color)';
+            } catch (error) {
+                input.style.borderColor = 'var(--danger-color)';
+            }
+        }
+    </script>
+</body>
+</html>
